@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -5,9 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { miningSites, waterQualityData } from "@/data/mockData";
-import { WaterQualityData, WaterQualityDetailedData } from "@/types";
+import { WaterQualityData } from "@/types";
 import { format } from "date-fns";
-import { ActivityIcon, DropletIcon, FilterIcon, FlaskConicalIcon, SearchIcon, ThermometerIcon } from "lucide-react";
+import { ActivityIcon, DownloadIcon, DropletIcon, FilterIcon, FlaskConicalIcon, SearchIcon, ThermometerIcon } from "lucide-react";
 import { WaterQualityParameterCard } from "@/components/water-quality/WaterQualityParameterCard";
 import { WaterQualityChart } from "@/components/dashboard/WaterQualityChart";
 
@@ -15,7 +16,7 @@ export default function WaterData() {
   const [selectedSite, setSelectedSite] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "normal" | "warning" | "critical">("all");
-  const [selectedParameter, setSelectedParameter] = useState<keyof WaterQualityDetailedData>("temperature");
+  const [selectedParameter, setSelectedParameter] = useState<keyof WaterQualityData>("temperature");
   
   // Filter the data based on site, search, and status
   const filteredData = waterQualityData
@@ -147,8 +148,8 @@ export default function WaterData() {
             <CardContent>
               <div className="grid gap-4">
                 <Select 
-                  value={selectedParameter} 
-                  onValueChange={(value: any) => setSelectedParameter(value)}
+                  value={selectedParameter as string} 
+                  onValueChange={(value: string) => setSelectedParameter(value as keyof WaterQualityData)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select parameter" />
@@ -286,7 +287,7 @@ export default function WaterData() {
 }
 
 // Utility function to get parameter thresholds
-function getParameterThreshold(parameter: keyof WaterQualityDetailedData) {
+function getParameterThreshold(parameter: keyof WaterQualityData) {
   const thresholds: Record<string, { min: number; max: number }> = {
     temperature: { min: 10, max: 30 },
     pH: { min: 6.5, max: 8.5 },
@@ -303,5 +304,5 @@ function getParameterThreshold(parameter: keyof WaterQualityDetailedData) {
     cadmium: { min: 0, max: 3 }
   };
   
-  return thresholds[parameter] || { min: 0, max: 100 };
+  return thresholds[parameter as string] || { min: 0, max: 100 };
 }

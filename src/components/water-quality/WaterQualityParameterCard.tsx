@@ -42,7 +42,8 @@ export function WaterQualityParameterCard({
     if (!previousValue || latestValue === previousValue) {
       return <MinusIcon className="h-4 w-4" />;
     }
-    return latestValue > previousValue ? (
+    // Fix the comparison to ensure we're comparing numbers
+    return Number(latestValue) > Number(previousValue) ? (
       <ArrowUpIcon className="h-4 w-4" />
     ) : (
       <ArrowDownIcon className="h-4 w-4" />

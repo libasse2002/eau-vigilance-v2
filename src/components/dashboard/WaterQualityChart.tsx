@@ -14,7 +14,7 @@ import {
 
 interface WaterQualityChartProps {
   data: WaterQualityData[];
-  parameter: "pH" | "temperature" | "dissolvedOxygen" | "conductivity" | "turbidity";
+  parameter: keyof WaterQualityData;
   color?: string;
   threshold?: {
     min?: number;
@@ -41,12 +41,20 @@ export function WaterQualityChart({
   }));
 
   // Get parameter label
-  const parameterLabels = {
+  const parameterLabels: Record<string, string> = {
     pH: "pH",
     temperature: "Temperature (°C)",
     dissolvedOxygen: "Dissolved Oxygen (mg/L)",
     conductivity: "Conductivity (μS/cm)",
     turbidity: "Turbidity (NTU)",
+    nitrates: "Nitrates (mg/L)",
+    fecalColiforms: "Fecal Coliforms (CFU/100mL)",
+    eColi: "E. coli (CFU/100mL)",
+    ibgn: "IBGN Score",
+    lead: "Lead (μg/L)",
+    mercury: "Mercury (μg/L)",
+    arsenic: "Arsenic (μg/L)",
+    cadmium: "Cadmium (μg/L)",
   };
 
   return (
@@ -98,7 +106,7 @@ export function WaterQualityChart({
                     </div>
                     <div className="flex flex-col">
                       <span className="text-xs font-medium text-muted-foreground">
-                        {parameterLabels[parameter]}
+                        {parameterLabels[parameter as string] || parameter}
                       </span>
                       <span className="font-medium">{typeof data.value === 'number' ? data.value.toFixed(2) : data.value}</span>
                     </div>

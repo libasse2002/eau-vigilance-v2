@@ -19,6 +19,27 @@ export interface WaterQualityData {
   dissolvedOxygen: number;
   conductivity: number;
   turbidity: number;
+  // Adding new properties for detailed water quality data
+  salinity: number;
+  nitrates: number;
+  nitrites: number;
+  ammonium: number;
+  phosphates: number;
+  suspendedSolids: number; // MES
+  fecalColiforms: number;
+  eColi: number;
+  pathogens: string;
+  ibgn: number;
+  lead: number;
+  mercury: number;
+  arsenic: number;
+  cadmium: number;
+  chromium: number;
+  copper: number;
+  zinc: number;
+  hydrocarbons: number;
+  organicSolvents: number;
+  pesticides: number;
   location: {
     latitude: number;
     longitude: number;
@@ -26,6 +47,9 @@ export interface WaterQualityData {
   collectedBy: string;
   status: "normal" | "warning" | "critical";
 }
+
+// Export WaterQualityDetailedData from waterQuality.ts
+export * from './waterQuality';
 
 // Alert
 export interface Alert {
