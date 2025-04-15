@@ -1,60 +1,53 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { miningSites, waterQualityData } from "@/data/mockData";
-import { WaterQualityData } from "@/types";
+import { WaterQualityData, WaterQualityDetailedData } from "@/types";
 import { format } from "date-fns";
-import { DownloadIcon, FilterIcon, SearchIcon } from "lucide-react";
+import { ActivityIcon, DropletIcon, FilterIcon, FlaskConicalIcon, SearchIcon, ThermometerIcon } from "lucide-react";
+import { WaterQualityParameterCard } from "@/components/water-quality/WaterQualityParameterCard";
+import { WaterQualityChart } from "@/components/dashboard/WaterQualityChart";
 
 export default function WaterData() {
   const [selectedSite, setSelectedSite] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "normal" | "warning" | "critical">("all");
+  const [selectedParameter, setSelectedParameter] = useState<keyof WaterQualityDetailedData>("temperature");
   
   // Filter the data based on site, search, and status
   const filteredData = waterQualityData
-    .filter(data => {
-      if (selectedSite === "all") return true;
-      return data.siteId === selectedSite;
-    })
-    .filter(data => {
-      if (!searchQuery) return true;
-      const query = searchQuery.toLowerCase();
-      return (
-        data.id.toLowerCase().includes(query) ||
-        data.siteId.toLowerCase().includes(query) ||
-        data.collectedBy.toLowerCase().includes(query)
-      );
-    })
-    .filter(data => {
-      if (statusFilter === "all") return true;
-      return data.status === statusFilter;
-    })
+    .filter(data => selectedSite === "all" ? true : data.siteId === selectedSite)
+    .filter(data => !searchQuery ? true : (
+      data.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      data.siteId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      data.collectedBy.toLowerCase().includes(searchQuery.toLowerCase())
+    ))
+    .filter(data => statusFilter === "all" ? true : data.status === statusFilter)
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-  
-  // Get site name by ID
-  const getSiteName = (siteId: string) => {
-    const site = miningSites.find(site => site.id === siteId);
-    return site ? site.name : "Unknown Site";
-  };
-  
-  // Get status class for styling
-  const getStatusClass = (status: "normal" | "warning" | "critical") => {
-    switch (status) {
-      case "normal":
-        return "bg-alert-low/10 text-alert-low";
-      case "warning":
-        return "bg-alert-medium/10 text-alert-medium";
-      case "critical":
-        return "bg-alert-high/10 text-alert-high";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
-  
+
+    // Get site name by ID
+    const getSiteName = (siteId: string) => {
+      const site = miningSites.find(site => site.id === siteId);
+      return site ? site.name : "Unknown Site";
+    };
+    
+    // Get status class for styling
+    const getStatusClass = (status: "normal" | "warning" | "critical") => {
+      switch (status) {
+        case "normal":
+          return "bg-alert-low/10 text-alert-low";
+        case "warning":
+          return "bg-alert-medium/10 text-alert-medium";
+        case "critical":
+          return "bg-alert-high/10 text-alert-high";
+        default:
+          return "bg-muted text-muted-foreground";
+      }
+    };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col space-y-4">
@@ -124,149 +117,191 @@ export default function WaterData() {
           </CardContent>
         </Card>
       </div>
-      
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Data Records</CardTitle>
-          <CardDescription>
-            {filteredData.length} water quality measurements found
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <div className="grid grid-cols-7 font-medium p-3 border-b bg-muted/50">
-              <div>Date</div>
-              <div>Site</div>
-              <div>Status</div>
-              <div>pH</div>
-              <div>Temperature</div>
-              <div>Dissolv. Oxygen</div>
-              <div>Turbidity</div>
-            </div>
-            
-            <div className="divide-y max-h-[600px] overflow-auto">
-              {filteredData.length > 0 ? (
-                filteredData.map((data) => (
-                  <div key={data.id} className="grid grid-cols-7 p-3 text-sm hover:bg-muted/50">
-                    <div>{format(new Date(data.timestamp), "MMM d, yyyy h:mm a")}</div>
-                    <div>{getSiteName(data.siteId)}</div>
-                    <div>
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs ${getStatusClass(data.status)}`}>
-                        {data.status}
-                      </span>
-                    </div>
-                    <div className="font-medium">{data.pH.toFixed(2)}</div>
-                    <div>{data.temperature.toFixed(1)}°C</div>
-                    <div>{data.dissolvedOxygen.toFixed(2)} mg/L</div>
-                    <div>{data.turbidity.toFixed(2)} NTU</div>
-                  </div>
-                ))
-              ) : (
-                <div className="p-4 text-center text-muted-foreground">
-                  No data records match your filters. Try adjusting your search criteria.
+
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">
+            <ActivityIcon className="h-4 w-4 mr-2" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="physico-chemical">
+            <ThermometerIcon className="h-4 w-4 mr-2" />
+            Physico-Chemical
+          </TabsTrigger>
+          <TabsTrigger value="biological">
+            <FlaskConicalIcon className="h-4 w-4 mr-2" />
+            Biological
+          </TabsTrigger>
+          <TabsTrigger value="metals">
+            <DropletIcon className="h-4 w-4 mr-2" />
+            Heavy Metals
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>Parameter Trends</CardTitle>
+              <CardDescription>Historical trends of key water quality parameters</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                <Select 
+                  value={selectedParameter} 
+                  onValueChange={(value: any) => setSelectedParameter(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select parameter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="temperature">Temperature</SelectItem>
+                    <SelectItem value="pH">pH</SelectItem>
+                    <SelectItem value="dissolvedOxygen">Dissolved Oxygen</SelectItem>
+                    <SelectItem value="conductivity">Conductivity</SelectItem>
+                    <SelectItem value="turbidity">Turbidity</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <div className="h-[400px]">
+                  <WaterQualityChart
+                    data={filteredData}
+                    parameter={selectedParameter as any}
+                    threshold={{
+                      min: getParameterThreshold(selectedParameter).min,
+                      max: getParameterThreshold(selectedParameter).max,
+                    }}
+                  />
                 </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Data Statistics</CardTitle>
-          <CardDescription>
-            Statistical analysis of filtered water quality data
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-5">
-            {filteredData.length > 0 ? (
-              <>
-                <StatCard 
-                  title="pH" 
-                  avg={calculateAverage(filteredData.map(d => d.pH))} 
-                  min={Math.min(...filteredData.map(d => d.pH))}
-                  max={Math.max(...filteredData.map(d => d.pH))}
-                />
-                <StatCard 
-                  title="Temperature" 
-                  avg={calculateAverage(filteredData.map(d => d.temperature))} 
-                  min={Math.min(...filteredData.map(d => d.temperature))}
-                  max={Math.max(...filteredData.map(d => d.temperature))}
-                  unit="°C"
-                />
-                <StatCard 
-                  title="Dissolved Oxygen" 
-                  avg={calculateAverage(filteredData.map(d => d.dissolvedOxygen))} 
-                  min={Math.min(...filteredData.map(d => d.dissolvedOxygen))}
-                  max={Math.max(...filteredData.map(d => d.dissolvedOxygen))}
-                  unit="mg/L"
-                />
-                <StatCard 
-                  title="Conductivity" 
-                  avg={calculateAverage(filteredData.map(d => d.conductivity))} 
-                  min={Math.min(...filteredData.map(d => d.conductivity))}
-                  max={Math.max(...filteredData.map(d => d.conductivity))}
-                  unit="μS/cm"
-                />
-                <StatCard 
-                  title="Turbidity" 
-                  avg={calculateAverage(filteredData.map(d => d.turbidity))} 
-                  min={Math.min(...filteredData.map(d => d.turbidity))}
-                  max={Math.max(...filteredData.map(d => d.turbidity))}
-                  unit="NTU"
-                />
-              </>
-            ) : (
-              <div className="md:col-span-5 p-4 text-center text-muted-foreground">
-                No data available for statistical analysis.
               </div>
-            )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="physico-chemical" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <WaterQualityParameterCard
+              title="Temperature"
+              unit="°C"
+              data={filteredData}
+              parameter="temperature"
+              threshold={{ min: 10, max: 30 }}
+            />
+            <WaterQualityParameterCard
+              title="pH"
+              data={filteredData}
+              parameter="pH"
+              threshold={{ min: 6.5, max: 8.5 }}
+            />
+            <WaterQualityParameterCard
+              title="Dissolved Oxygen"
+              unit="mg/L"
+              data={filteredData}
+              parameter="dissolvedOxygen"
+              threshold={{ min: 5, max: 9 }}
+            />
+            <WaterQualityParameterCard
+              title="Conductivity"
+              unit="μS/cm"
+              data={filteredData}
+              parameter="conductivity"
+              threshold={{ min: 100, max: 2000 }}
+            />
+            <WaterQualityParameterCard
+              title="Turbidity"
+              unit="NTU"
+              data={filteredData}
+              parameter="turbidity"
+              threshold={{ min: 0, max: 5 }}
+            />
+            <WaterQualityParameterCard
+              title="Nitrates"
+              unit="mg/L"
+              data={filteredData}
+              parameter="nitrates"
+              threshold={{ min: 0, max: 50 }}
+            />
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        <TabsContent value="biological" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <WaterQualityParameterCard
+              title="Fecal Coliforms"
+              unit="CFU/100mL"
+              data={filteredData}
+              parameter="fecalColiforms"
+              threshold={{ min: 0, max: 200 }}
+            />
+            <WaterQualityParameterCard
+              title="E. coli"
+              unit="CFU/100mL"
+              data={filteredData}
+              parameter="eColi"
+              threshold={{ min: 0, max: 100 }}
+            />
+            <WaterQualityParameterCard
+              title="IBGN Score"
+              data={filteredData}
+              parameter="ibgn"
+              threshold={{ min: 0, max: 20 }}
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="metals" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <WaterQualityParameterCard
+              title="Lead (Pb)"
+              unit="μg/L"
+              data={filteredData}
+              parameter="lead"
+              threshold={{ min: 0, max: 10 }}
+            />
+            <WaterQualityParameterCard
+              title="Mercury (Hg)"
+              unit="μg/L"
+              data={filteredData}
+              parameter="mercury"
+              threshold={{ min: 0, max: 1 }}
+            />
+            <WaterQualityParameterCard
+              title="Arsenic (As)"
+              unit="μg/L"
+              data={filteredData}
+              parameter="arsenic"
+              threshold={{ min: 0, max: 10 }}
+            />
+            <WaterQualityParameterCard
+              title="Cadmium (Cd)"
+              unit="μg/L"
+              data={filteredData}
+              parameter="cadmium"
+              threshold={{ min: 0, max: 3 }}
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
 
-// Utility function to calculate average
-function calculateAverage(values: number[]): number {
-  if (values.length === 0) return 0;
-  const sum = values.reduce((a, b) => a + b, 0);
-  return sum / values.length;
-}
-
-// Stat card component for displaying statistics
-function StatCard({ 
-  title, 
-  avg, 
-  min, 
-  max, 
-  unit = "" 
-}: { 
-  title: string; 
-  avg: number; 
-  min: number; 
-  max: number; 
-  unit?: string;
-}) {
-  return (
-    <div className="bg-muted/50 rounded-md p-3">
-      <div className="text-sm font-medium">{title}</div>
-      <div className="mt-2 grid grid-cols-3 gap-2 text-center">
-        <div>
-          <div className="text-xs text-muted-foreground">Avg</div>
-          <div className="font-medium">{avg.toFixed(1)}{unit}</div>
-        </div>
-        <div>
-          <div className="text-xs text-muted-foreground">Min</div>
-          <div className="font-medium">{min.toFixed(1)}{unit}</div>
-        </div>
-        <div>
-          <div className="text-xs text-muted-foreground">Max</div>
-          <div className="font-medium">{max.toFixed(1)}{unit}</div>
-        </div>
-      </div>
-    </div>
-  );
+// Utility function to get parameter thresholds
+function getParameterThreshold(parameter: keyof WaterQualityDetailedData) {
+  const thresholds: Record<string, { min: number; max: number }> = {
+    temperature: { min: 10, max: 30 },
+    pH: { min: 6.5, max: 8.5 },
+    dissolvedOxygen: { min: 5, max: 9 },
+    conductivity: { min: 100, max: 2000 },
+    turbidity: { min: 0, max: 5 },
+    nitrates: { min: 0, max: 50 },
+    fecalColiforms: { min: 0, max: 200 },
+    eColi: { min: 0, max: 100 },
+    ibgn: { min: 0, max: 20 },
+    lead: { min: 0, max: 10 },
+    mercury: { min: 0, max: 1 },
+    arsenic: { min: 0, max: 10 },
+    cadmium: { min: 0, max: 3 }
+  };
+  
+  return thresholds[parameter] || { min: 0, max: 100 };
 }
