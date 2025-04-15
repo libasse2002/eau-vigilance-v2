@@ -11,6 +11,7 @@ import WaterData from "./pages/WaterData";
 import MapView from "./pages/MapView";
 import Alerts from "./pages/Alerts";
 import NotFound from "./pages/NotFound";
+import DataEntry from "./pages/DataEntry";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/water-data" element={<WaterData />} />
+              <Route path="/data-entry" element={<DataEntry />} />
               <Route path="/map" element={<MapView />} />
               <Route path="/alerts" element={<Alerts />} />
               {/* Other routes will be added later */}
