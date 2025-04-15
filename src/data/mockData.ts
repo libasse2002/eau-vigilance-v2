@@ -174,6 +174,25 @@ export const generateWaterQualityData = (): WaterQualityData[] => {
       const dissolvedOxygen = getRandomInRange(3, 8);
       const conductivity = getRandomInRange(400, 1000);
       const turbidity = getRandomInRange(1, 8);
+      const salinity = getRandomInRange(0.1, 2);
+      const nitrates = getRandomInRange(0, 80);
+      const nitrites = getRandomInRange(0, 1);
+      const ammonium = getRandomInRange(0, 2);
+      const phosphates = getRandomInRange(0, 1);
+      const suspendedSolids = getRandomInRange(5, 50);
+      const fecalColiforms = getRandomInRange(0, 2000);
+      const eColi = getRandomInRange(0, 1000);
+      const ibgn = getRandomInRange(0, 20);
+      const lead = getRandomInRange(0, 20);
+      const mercury = getRandomInRange(0, 5);
+      const arsenic = getRandomInRange(0, 15);
+      const cadmium = getRandomInRange(0, 10);
+      const chromium = getRandomInRange(0, 50);
+      const copper = getRandomInRange(0, 100);
+      const zinc = getRandomInRange(0, 200);
+      const hydrocarbons = getRandomInRange(0, 500);
+      const organicSolvents = getRandomInRange(0, 100);
+      const pesticides = getRandomInRange(0, 50);
       
       // Determine status based on thresholds
       let overallStatus: "normal" | "warning" | "critical" = "normal";
@@ -199,6 +218,26 @@ export const generateWaterQualityData = (): WaterQualityData[] => {
         dissolvedOxygen,
         conductivity,
         turbidity,
+        salinity,
+        nitrates,
+        nitrites,
+        ammonium,
+        phosphates,
+        suspendedSolids,
+        fecalColiforms,
+        eColi,
+        pathogens: Math.random() > 0.8 ? "Detected" : "None",
+        ibgn,
+        lead,
+        mercury,
+        arsenic,
+        cadmium,
+        chromium,
+        copper,
+        zinc,
+        hydrocarbons,
+        organicSolvents,
+        pesticides,
         location: {
           latitude: site.location.latitude + getRandomInRange(-0.01, 0.01),
           longitude: site.location.longitude + getRandomInRange(-0.01, 0.01),

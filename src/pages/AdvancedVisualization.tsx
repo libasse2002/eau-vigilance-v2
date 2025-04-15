@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,7 +10,7 @@ import {
   Droplet as DropletIcon, 
   FlaskConical as FlaskConicalIcon, 
   Thermometer as ThermometerIcon,
-  Virus as VirusIcon,
+  Microscope as MicroscopeIcon,
   Database as DatabaseIcon
 } from "lucide-react";
 import { AdvancedWaterQualityChart } from "@/components/water-quality/AdvancedWaterQualityChart";
@@ -91,7 +90,7 @@ export default function AdvancedVisualization() {
             Heavy Metals
           </TabsTrigger>
           <TabsTrigger value="pathogens">
-            <VirusIcon className="h-4 w-4 mr-2" />
+            <MicroscopeIcon className="h-4 w-4 mr-2" />
             Pathogens
           </TabsTrigger>
         </TabsList>
