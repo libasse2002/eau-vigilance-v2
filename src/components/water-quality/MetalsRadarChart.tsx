@@ -14,9 +14,10 @@ import {
 interface MetalsRadarChartProps {
   data: WaterQualityData[];
   siteId?: string;
+  height?: number;
 }
 
-export function MetalsRadarChart({ data, siteId }: MetalsRadarChartProps) {
+export function MetalsRadarChart({ data, siteId, height = 400 }: MetalsRadarChartProps) {
   // Filter data by site if specified
   const filteredData = siteId 
     ? data.filter(d => d.siteId === siteId)
@@ -60,12 +61,12 @@ export function MetalsRadarChart({ data, siteId }: MetalsRadarChartProps) {
     
     return {
       site: data.siteId,
-      "Lead": normalizedLead,
-      "Mercury": normalizedMercury,
+      "Plomb": normalizedLead,
+      "Mercure": normalizedMercury,
       "Arsenic": normalizedArsenic,
       "Cadmium": normalizedCadmium,
-      "Chromium": normalizedChromium,
-      "Copper": normalizedCopper,
+      "Chrome": normalizedChromium,
+      "Cuivre": normalizedCopper,
       "Zinc": normalizedZinc,
       // Raw values for tooltip
       leadRaw: data.lead,
@@ -78,16 +79,16 @@ export function MetalsRadarChart({ data, siteId }: MetalsRadarChartProps) {
     };
   });
   
-  // Generate a unique color for each site
-  const siteColors = [
-    "#7c3aed", // Purple
-    "#3b82f6", // Blue
-    "#10b981", // Green
-    "#f59e0b", // Amber
-    "#ef4444", // Red
-    "#8b5cf6", // Light purple
-    "#06b6d4", // Cyan
-  ];
+  // Generate a unique color for each metal
+  const metalColors = {
+    "Plomb": "#7c3aed", // Purple
+    "Mercure": "#ef4444", // Red
+    "Arsenic": "#10b981", // Green
+    "Cadmium": "#f59e0b", // Amber
+    "Chrome": "#3b82f6", // Blue
+    "Cuivre": "#8b5cf6", // Light purple
+    "Zinc": "#06b6d4", // Cyan
+  };
   
   // Custom tooltip to show both percentage and actual values
   const CustomTooltip = ({ active, payload }: any) => {
@@ -100,17 +101,38 @@ export function MetalsRadarChart({ data, siteId }: MetalsRadarChartProps) {
           {payload.map((entry: any, index: number) => {
             if (entry.dataKey === 'site') return null;
             
-            const rawValueKey = entry.dataKey.toLowerCase() + 'Raw';
+            const rawValueKey = entry.dataKey === 'Plomb' ? 'leadRaw' :
+                               entry.dataKey === 'Mercure' ? 'mercuryRaw' :
+                               entry.dataKey === 'Arsenic' ? 'arsenicRaw' :
+                               entry.dataKey === 'Cadmium' ? 'cadmiumRaw' :
+                               entry.dataKey === 'Chrome' ? 'chromiumRaw' :
+                               entry.dataKey === 'Cuivre' ? 'copperRaw' :
+                               entry.dataKey === 'Zinc' ? 'zincRaw' : '';
+            
             const rawValue = data[rawValueKey];
+            const threshold = entry.dataKey === 'Plomb' ? thresholds.lead :
+                             entry.dataKey === 'Mercure' ? thresholds.mercury :
+                             entry.dataKey === 'Arsenic' ? thresholds.arsenic :
+                             entry.dataKey === 'Cadmium' ? thresholds.cadmium :
+                             entry.dataKey === 'Chrome' ? thresholds.chromium :
+                             entry.dataKey === 'Cuivre' ? thresholds.copper :
+                             entry.dataKey === 'Zinc' ? thresholds.zinc : 0;
+            
+            // Color based on percentage of threshold
+            const percentValue = entry.value;
+            let textColor = "#22c55e"; // Green
+            if (percentValue > 100) textColor = "#ef4444"; // Red
+            else if (percentValue > 75) textColor = "#f97316"; // Orange
+            else if (percentValue > 50) textColor = "#eab308"; // Yellow
             
             return (
-              <p key={index} style={{ color: entry.color }}>
-                {entry.name}: {entry.value.toFixed(1)}% 
-                {typeof rawValue === 'number' && ` (${rawValue.toFixed(2)} μg/L)`}
+              <p key={index} style={{ color: textColor }}>
+                {entry.name}: <span className="font-semibold">{percentValue.toFixed(1)}%</span> 
+                {typeof rawValue === 'number' && <span> ({rawValue.toFixed(2)} / {threshold} μg/L)</span>}
               </p>
             );
           })}
-          <p className="text-xs text-gray-500 mt-1">% of regulatory threshold</p>
+          <p className="text-xs text-gray-500 mt-1">% de la norme réglementaire</p>
         </div>
       );
     }
@@ -118,78 +140,59 @@ export function MetalsRadarChart({ data, siteId }: MetalsRadarChartProps) {
   };
   
   return (
-    <div className="h-[500px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart outerRadius="80%" data={radarData}>
-          <PolarGrid />
-          <PolarAngleAxis dataKey="site" />
-          <PolarRadiusAxis domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
-          
-          {/* 100% threshold reference */}
-          <Radar
-            name="Regulatory Threshold"
-            dataKey={() => 100}
-            stroke="#ef4444"
-            fill="none"
-            strokeWidth={2}
-            strokeDasharray="5 5"
-          />
-          
-          {/* Metal radars */}
-          <Radar
-            name="Lead"
-            dataKey="Lead"
-            stroke="#7c3aed"
-            fill="#7c3aed"
-            fillOpacity={0.2}
-          />
-          <Radar
-            name="Mercury"
-            dataKey="Mercury"
-            stroke="#3b82f6"
-            fill="#3b82f6"
-            fillOpacity={0.2}
-          />
-          <Radar
-            name="Arsenic"
-            dataKey="Arsenic"
-            stroke="#10b981"
-            fill="#10b981"
-            fillOpacity={0.2}
-          />
-          <Radar
-            name="Cadmium"
-            dataKey="Cadmium"
-            stroke="#f59e0b"
-            fill="#f59e0b"
-            fillOpacity={0.2}
-          />
-          <Radar
-            name="Chromium"
-            dataKey="Chromium"
-            stroke="#ef4444"
-            fill="#ef4444"
-            fillOpacity={0.2}
-          />
-          <Radar
-            name="Copper"
-            dataKey="Copper"
-            stroke="#8b5cf6"
-            fill="#8b5cf6"
-            fillOpacity={0.2}
-          />
-          <Radar
-            name="Zinc"
-            dataKey="Zinc"
-            stroke="#06b6d4"
-            fill="#06b6d4"
-            fillOpacity={0.2}
-          />
-          
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
-        </RadarChart>
-      </ResponsiveContainer>
+    <div className="space-y-2">
+      <h3 className="text-lg font-medium">Concentrations normalisées en métaux lourds</h3>
+      
+      <div style={{ height: height || 400 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart outerRadius="70%" data={radarData}>
+            <PolarGrid />
+            <PolarAngleAxis dataKey="site" />
+            <PolarRadiusAxis domain={[0, 150]} tickFormatter={(value) => `${value}%`} />
+            
+            {/* 100% threshold reference */}
+            <Radar
+              name="Seuil réglementaire"
+              dataKey={() => 100}
+              stroke="#ef4444"
+              fill="none"
+              strokeWidth={2}
+              strokeDasharray="5 5"
+            />
+            
+            {/* Metal radars */}
+            {Object.entries(metalColors).map(([metal, color]) => (
+              <Radar
+                key={metal}
+                name={metal}
+                dataKey={metal}
+                stroke={color}
+                fill={color}
+                fillOpacity={0.2}
+              />
+            ))}
+            
+            <Tooltip content={<CustomTooltip />} />
+            <Legend />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+      
+      <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500">
+        <div className="flex items-center">
+          <div className="w-3 h-3 border border-red-500 border-dashed mr-1 rounded-sm" />
+          <span>Seuil réglementaire (100%)</span>
+        </div>
+        {Object.entries(metalColors).map(([metal, color]) => (
+          <div key={metal} className="flex items-center">
+            <div 
+              className="w-3 h-3 mr-1 rounded-sm" 
+              style={{ backgroundColor: color }} 
+            />
+            <span>{metal}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

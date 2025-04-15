@@ -6,7 +6,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { miningSites, waterQualityData } from "@/data/mockData";
-import { WaterQualityData } from "@/types";
 import { format } from "date-fns";
 import { 
   ActivityIcon, 
@@ -15,16 +14,22 @@ import {
   Filter as FilterIcon, 
   FlaskConical as FlaskConicalIcon, 
   Search as SearchIcon, 
-  Thermometer as ThermometerIcon 
+  Thermometer as ThermometerIcon,
+  Database as DatabaseIcon,
+  BarChart3Icon
 } from "lucide-react";
-import { WaterQualityParameterCard } from "@/components/water-quality/WaterQualityParameterCard";
-import { WaterQualityChart } from "@/components/dashboard/WaterQualityChart";
+
+// Import our new chart components
+import { TemperatureChart } from "@/components/water-quality/TemperatureChart";
+import { PhChart } from "@/components/water-quality/PhChart";
+import { DissolvedOxygenChart } from "@/components/water-quality/DissolvedOxygenChart";
+import { MetalsRadarChart } from "@/components/water-quality/MetalsRadarChart";
+import { IBGNBarChart } from "@/components/water-quality/IBGNBarChart";
 
 export default function WaterData() {
   const [selectedSite, setSelectedSite] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "normal" | "warning" | "critical">("all");
-  const [selectedParameter, setSelectedParameter] = useState<keyof WaterQualityData>("temperature");
   
   // Filter the data based on site, search, and status
   const filteredData = waterQualityData
@@ -37,41 +42,21 @@ export default function WaterData() {
     .filter(data => statusFilter === "all" ? true : data.status === statusFilter)
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-    // Get site name by ID
-    const getSiteName = (siteId: string) => {
-      const site = miningSites.find(site => site.id === siteId);
-      return site ? site.name : "Unknown Site";
-    };
-    
-    // Get status class for styling
-    const getStatusClass = (status: "normal" | "warning" | "critical") => {
-      switch (status) {
-        case "normal":
-          return "bg-alert-low/10 text-alert-low";
-        case "warning":
-          return "bg-alert-medium/10 text-alert-medium";
-        case "critical":
-          return "bg-alert-high/10 text-alert-high";
-        default:
-          return "bg-muted text-muted-foreground";
-      }
-    };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Water Quality Data</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Qualité de l'Eau</h1>
             <p className="text-muted-foreground">
-              Browse, filter, and analyze water quality measurements
+              Analyses et visualisations des données de qualité de l'eau
             </p>
           </div>
           
           <div className="flex gap-2">
             <Button variant="outline" size="sm">
               <DownloadIcon className="h-4 w-4 mr-2" />
-              Export Data
+              Exporter (PDF)
             </Button>
           </div>
         </div>
@@ -83,7 +68,7 @@ export default function WaterData() {
                 <div className="relative">
                   <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search data points..."
+                    placeholder="Rechercher des données..."
                     className="pl-8"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -95,10 +80,10 @@ export default function WaterData() {
                 <div className="w-[180px]">
                   <Select value={selectedSite} onValueChange={setSelectedSite}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Filter by site" />
+                      <SelectValue placeholder="Filtrer par site" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Sites</SelectItem>
+                      <SelectItem value="all">Tous les sites</SelectItem>
                       {miningSites.map(site => (
                         <SelectItem key={site.id} value={site.id}>
                           {site.name}
@@ -111,13 +96,13 @@ export default function WaterData() {
                 <div className="w-[180px]">
                   <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Filter by status" />
+                      <SelectValue placeholder="Filtrer par statut" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="all">Tous les statuts</SelectItem>
                       <SelectItem value="normal">Normal</SelectItem>
-                      <SelectItem value="warning">Warning</SelectItem>
-                      <SelectItem value="critical">Critical</SelectItem>
+                      <SelectItem value="warning">Avertissement</SelectItem>
+                      <SelectItem value="critical">Critique</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -127,205 +112,157 @@ export default function WaterData() {
         </Card>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">
-            <ActivityIcon className="h-4 w-4 mr-2" />
-            Overview
-          </TabsTrigger>
+      <Tabs defaultValue="physico-chemical" className="space-y-4">
+        <TabsList className="w-full justify-start overflow-x-auto">
           <TabsTrigger value="physico-chemical">
             <ThermometerIcon className="h-4 w-4 mr-2" />
-            Physico-Chemical
+            Physico-Chimique
           </TabsTrigger>
           <TabsTrigger value="biological">
             <FlaskConicalIcon className="h-4 w-4 mr-2" />
-            Biological
+            Biologique
           </TabsTrigger>
           <TabsTrigger value="metals">
             <DropletIcon className="h-4 w-4 mr-2" />
-            Heavy Metals
+            Métaux Lourds
+          </TabsTrigger>
+          <TabsTrigger value="chemicals">
+            <DatabaseIcon className="h-4 w-4 mr-2" />
+            Chimiques Spécifiques
+          </TabsTrigger>
+          <TabsTrigger value="summary">
+            <BarChart3Icon className="h-4 w-4 mr-2" />
+            Synthèse
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
+        <TabsContent value="physico-chemical" className="space-y-6">
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Parameter Trends</CardTitle>
-              <CardDescription>Historical trends of key water quality parameters</CardDescription>
+            <CardHeader>
+              <CardTitle>Température</CardTitle>
+              <CardDescription>
+                Évolution de la température avec variations saisonnières et seuils critiques
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4">
-                <Select 
-                  value={selectedParameter as string} 
-                  onValueChange={(value) => setSelectedParameter(value as keyof WaterQualityData)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select parameter" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="temperature">Temperature</SelectItem>
-                    <SelectItem value="pH">pH</SelectItem>
-                    <SelectItem value="dissolvedOxygen">Dissolved Oxygen</SelectItem>
-                    <SelectItem value="conductivity">Conductivity</SelectItem>
-                    <SelectItem value="turbidity">Turbidity</SelectItem>
-                    <SelectItem value="nitrates">Nitrates</SelectItem>
-                    <SelectItem value="salinity">Salinity</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <div className="h-[400px]">
-                  <WaterQualityChart
-                    data={filteredData}
-                    parameter={selectedParameter}
-                    threshold={{
-                      min: getParameterThreshold(selectedParameter).min,
-                      max: getParameterThreshold(selectedParameter).max,
-                    }}
-                    secondaryParameter={selectedParameter === "dissolvedOxygen" ? "temperature" : undefined}
-                  />
-                </div>
-              </div>
+              <TemperatureChart data={filteredData} />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>pH</CardTitle>
+              <CardDescription>
+                Évolution du pH avec plage optimale mise en évidence (6,5-8,5)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PhChart data={filteredData} />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Oxygène Dissous</CardTitle>
+              <CardDescription>
+                Oxygène dissous avec zones de qualité et corrélation avec la température
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DissolvedOxygenChart data={filteredData} />
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="physico-chemical" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <WaterQualityParameterCard
-              title="Temperature"
-              unit="°C"
-              data={filteredData}
-              parameter="temperature"
-              threshold={{ min: 10, max: 30 }}
-            />
-            <WaterQualityParameterCard
-              title="pH"
-              data={filteredData}
-              parameter="pH"
-              threshold={{ min: 6.5, max: 8.5 }}
-            />
-            <WaterQualityParameterCard
-              title="Dissolved Oxygen"
-              unit="mg/L"
-              data={filteredData}
-              parameter="dissolvedOxygen"
-              threshold={{ min: 5, max: 9 }}
-              secondaryParameter="temperature"
-            />
-            <WaterQualityParameterCard
-              title="Conductivity"
-              unit="μS/cm"
-              data={filteredData}
-              parameter="conductivity"
-              threshold={{ min: 100, max: 2000 }}
-            />
-            <WaterQualityParameterCard
-              title="Turbidity"
-              unit="NTU"
-              data={filteredData}
-              parameter="turbidity"
-              threshold={{ min: 0, max: 5 }}
-            />
-            <WaterQualityParameterCard
-              title="Nitrates"
-              unit="mg/L"
-              data={filteredData}
-              parameter="nitrates"
-              threshold={{ min: 0, max: 50 }}
-            />
-          </div>
+        <TabsContent value="biological" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Indice Biologique Global Normalisé (IBGN)</CardTitle>
+              <CardDescription>
+                Indice biologique indiquant la qualité globale de l'eau
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <IBGNBarChart data={filteredData} />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Coliformes Fécaux & E. coli</CardTitle>
+              <CardDescription>
+                Indicateurs de contamination fécale (échelle logarithmique)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="p-6 text-center text-muted-foreground">
+                <p>Cette visualisation sera disponible dans une mise à jour future.</p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
-
-        <TabsContent value="biological" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <WaterQualityParameterCard
-              title="Fecal Coliforms"
-              unit="CFU/100mL"
-              data={filteredData}
-              parameter="fecalColiforms"
-              threshold={{ min: 0, max: 200 }}
-            />
-            <WaterQualityParameterCard
-              title="E. coli"
-              unit="CFU/100mL"
-              data={filteredData}
-              parameter="eColi"
-              threshold={{ min: 0, max: 100 }}
-            />
-            <WaterQualityParameterCard
-              title="IBGN Score"
-              data={filteredData}
-              parameter="ibgn"
-              threshold={{ min: 0, max: 20 }}
-            />
-          </div>
+        
+        <TabsContent value="metals" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Métaux Lourds</CardTitle>
+              <CardDescription>
+                Visualisation comparative de tous les métaux lourds relative aux seuils réglementaires
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <MetalsRadarChart data={filteredData} siteId={selectedSite === "all" ? undefined : selectedSite} />
+            </CardContent>
+          </Card>
         </TabsContent>
-
-        <TabsContent value="metals" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <WaterQualityParameterCard
-              title="Lead (Pb)"
-              unit="μg/L"
-              data={filteredData}
-              parameter="lead"
-              threshold={{ min: 0, max: 10 }}
-            />
-            <WaterQualityParameterCard
-              title="Mercury (Hg)"
-              unit="μg/L"
-              data={filteredData}
-              parameter="mercury"
-              threshold={{ min: 0, max: 1 }}
-            />
-            <WaterQualityParameterCard
-              title="Arsenic (As)"
-              unit="μg/L"
-              data={filteredData}
-              parameter="arsenic"
-              threshold={{ min: 0, max: 10 }}
-            />
-            <WaterQualityParameterCard
-              title="Cadmium (Cd)"
-              unit="μg/L"
-              data={filteredData}
-              parameter="cadmium"
-              threshold={{ min: 0, max: 3 }}
-            />
-          </div>
+        
+        <TabsContent value="chemicals" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Hydrocarbures & Solvants Organiques</CardTitle>
+              <CardDescription>
+                Concentrations relatives aux normes réglementaires
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="p-6 text-center text-muted-foreground">
+                <p>Cette visualisation sera disponible dans une mise à jour future.</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Pesticides</CardTitle>
+              <CardDescription>
+                Concentrations de pesticides et polluants organiques persistants
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="p-6 text-center text-muted-foreground">
+                <p>Cette visualisation sera disponible dans une mise à jour future.</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="summary" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Synthèse de Qualité des Eaux</CardTitle>
+              <CardDescription>
+                Vue d'ensemble multi-paramètres pour tous les sites
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="p-6 text-center text-muted-foreground">
+                <p>Cette visualisation sera disponible dans une mise à jour future.</p>
+                <p className="mt-2">Elle combinera les indicateurs clés en un tableau de bord synthétique.</p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
   );
-}
-
-// Utility function to get parameter thresholds
-function getParameterThreshold(parameter: keyof WaterQualityData) {
-  const thresholds: Record<string, { min: number; max: number }> = {
-    temperature: { min: 10, max: 30 },
-    pH: { min: 6.5, max: 8.5 },
-    dissolvedOxygen: { min: 5, max: 9 },
-    conductivity: { min: 100, max: 2000 },
-    turbidity: { min: 0, max: 5 },
-    nitrates: { min: 0, max: 50 },
-    fecalColiforms: { min: 0, max: 200 },
-    eColi: { min: 0, max: 100 },
-    ibgn: { min: 0, max: 20 },
-    lead: { min: 0, max: 10 },
-    mercury: { min: 0, max: 1 },
-    arsenic: { min: 0, max: 10 },
-    cadmium: { min: 0, max: 3 },
-    salinity: { min: 0, max: 35 },
-    nitrites: { min: 0, max: 1 },
-    ammonium: { min: 0, max: 1 },
-    phosphates: { min: 0, max: 0.5 },
-    suspendedSolids: { min: 0, max: 30 },
-    chromium: { min: 0, max: 50 },
-    copper: { min: 0, max: 100 },
-    zinc: { min: 0, max: 500 },
-    hydrocarbons: { min: 0, max: 500 },
-    organicSolvents: { min: 0, max: 100 },
-    pesticides: { min: 0, max: 0.5 }
-  };
-  
-  return thresholds[parameter as string] || { min: 0, max: 100 };
 }
