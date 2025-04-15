@@ -13,6 +13,8 @@ interface WaterQualityParameterCardProps {
     min: number;
     max: number;
   };
+  secondaryParameter?: keyof WaterQualityData;
+  secondaryUnit?: string;
 }
 
 export function WaterQualityParameterCard({
@@ -21,17 +23,25 @@ export function WaterQualityParameterCard({
   parameter,
   unit = "",
   threshold,
+  secondaryParameter,
+  secondaryUnit,
 }: WaterQualityParameterCardProps) {
   if (!data.length) return null;
 
-  const latestValue = data[0][parameter];
-  const previousValue = data[1]?.[parameter];
-  const values = data.map(d => Number(d[parameter]));
-  const average = values.reduce((a, b) => a + b, 0) / values.length;
+  // Ensure we're working with numeric values
+  const latestValue = typeof data[0][parameter] === 'number' ? 
+    data[0][parameter] as number : 0;
+    
+  const previousValue = data[1] && typeof data[1][parameter] === 'number' ? 
+    data[1][parameter] as number : null;
+    
+  // Filter out any non-numeric values
+  const values = data
+    .map(d => d[parameter])
+    .filter((value): value is number => typeof value === 'number');
+    
+  const average = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
   
-  const isNumber = typeof latestValue === "number";
-  if (!isNumber) return null;
-
   const getStatusColor = (value: number) => {
     if (!threshold) return "text-primary";
     if (value < threshold.min || value > threshold.max) return "text-destructive";
@@ -39,15 +49,33 @@ export function WaterQualityParameterCard({
   };
 
   const getChangeIcon = () => {
-    if (!previousValue || latestValue === previousValue) {
+    if (previousValue === null || latestValue === previousValue) {
       return <MinusIcon className="h-4 w-4" />;
     }
-    // Fix the comparison to ensure we're comparing numbers
-    return Number(latestValue) > Number(previousValue) ? (
+    return latestValue > previousValue ? (
       <ArrowUpIcon className="h-4 w-4" />
     ) : (
       <ArrowDownIcon className="h-4 w-4" />
     );
+  };
+
+  // Get custom color based on parameter
+  const getParameterColor = () => {
+    switch (parameter) {
+      case 'temperature': return "#ef4444"; // Red for temperature
+      case 'pH': return "#3b82f6"; // Blue for pH
+      case 'dissolvedOxygen': return "#22c55e"; // Green for DO
+      case 'conductivity': return "#f59e0b"; // Amber for conductivity
+      case 'turbidity': return "#92400e"; // Brown for turbidity
+      case 'lead':
+      case 'mercury':
+      case 'arsenic':
+      case 'cadmium': 
+      case 'chromium':
+      case 'copper':
+      case 'zinc': return "#7c3aed"; // Purple for metals
+      default: return "#0ea5e9"; // Default blue
+    }
   };
 
   return (
@@ -76,8 +104,10 @@ export function WaterQualityParameterCard({
         <div className="h-[100px] mt-4">
           <WaterQualityChart
             data={data.slice(0, 10)}
-            parameter={parameter as any}
+            parameter={parameter}
+            color={getParameterColor()}
             threshold={threshold}
+            secondaryParameter={secondaryParameter}
           />
         </div>
       </CardContent>

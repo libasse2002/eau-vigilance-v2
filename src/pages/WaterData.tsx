@@ -8,7 +8,15 @@ import { Button } from "@/components/ui/button";
 import { miningSites, waterQualityData } from "@/data/mockData";
 import { WaterQualityData } from "@/types";
 import { format } from "date-fns";
-import { ActivityIcon, DownloadIcon, DropletIcon, FilterIcon, FlaskConicalIcon, SearchIcon, ThermometerIcon } from "lucide-react";
+import { 
+  ActivityIcon, 
+  Download as DownloadIcon, 
+  Droplet as DropletIcon, 
+  Filter as FilterIcon, 
+  FlaskConical as FlaskConicalIcon, 
+  Search as SearchIcon, 
+  Thermometer as ThermometerIcon 
+} from "lucide-react";
 import { WaterQualityParameterCard } from "@/components/water-quality/WaterQualityParameterCard";
 import { WaterQualityChart } from "@/components/dashboard/WaterQualityChart";
 
@@ -149,7 +157,7 @@ export default function WaterData() {
               <div className="grid gap-4">
                 <Select 
                   value={selectedParameter as string} 
-                  onValueChange={(value: string) => setSelectedParameter(value as keyof WaterQualityData)}
+                  onValueChange={(value) => setSelectedParameter(value as keyof WaterQualityData)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select parameter" />
@@ -160,17 +168,20 @@ export default function WaterData() {
                     <SelectItem value="dissolvedOxygen">Dissolved Oxygen</SelectItem>
                     <SelectItem value="conductivity">Conductivity</SelectItem>
                     <SelectItem value="turbidity">Turbidity</SelectItem>
+                    <SelectItem value="nitrates">Nitrates</SelectItem>
+                    <SelectItem value="salinity">Salinity</SelectItem>
                   </SelectContent>
                 </Select>
                 
                 <div className="h-[400px]">
                   <WaterQualityChart
                     data={filteredData}
-                    parameter={selectedParameter as any}
+                    parameter={selectedParameter}
                     threshold={{
                       min: getParameterThreshold(selectedParameter).min,
                       max: getParameterThreshold(selectedParameter).max,
                     }}
+                    secondaryParameter={selectedParameter === "dissolvedOxygen" ? "temperature" : undefined}
                   />
                 </div>
               </div>
@@ -199,6 +210,7 @@ export default function WaterData() {
               data={filteredData}
               parameter="dissolvedOxygen"
               threshold={{ min: 5, max: 9 }}
+              secondaryParameter="temperature"
             />
             <WaterQualityParameterCard
               title="Conductivity"
@@ -301,7 +313,18 @@ function getParameterThreshold(parameter: keyof WaterQualityData) {
     lead: { min: 0, max: 10 },
     mercury: { min: 0, max: 1 },
     arsenic: { min: 0, max: 10 },
-    cadmium: { min: 0, max: 3 }
+    cadmium: { min: 0, max: 3 },
+    salinity: { min: 0, max: 35 },
+    nitrites: { min: 0, max: 1 },
+    ammonium: { min: 0, max: 1 },
+    phosphates: { min: 0, max: 0.5 },
+    suspendedSolids: { min: 0, max: 30 },
+    chromium: { min: 0, max: 50 },
+    copper: { min: 0, max: 100 },
+    zinc: { min: 0, max: 500 },
+    hydrocarbons: { min: 0, max: 500 },
+    organicSolvents: { min: 0, max: 100 },
+    pesticides: { min: 0, max: 0.5 }
   };
   
   return thresholds[parameter as string] || { min: 0, max: 100 };

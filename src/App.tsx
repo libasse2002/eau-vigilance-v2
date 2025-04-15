@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +13,7 @@ import MapView from "./pages/MapView";
 import Alerts from "./pages/Alerts";
 import NotFound from "./pages/NotFound";
 import DataEntry from "./pages/DataEntry";
+import AdvancedVisualization from "./pages/AdvancedVisualization";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,7 @@ const App = () => (
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/water-data" element={<WaterData />} />
+              <Route path="/advanced-visualization" element={<AdvancedVisualization />} />
               <Route path="/data-entry" element={<DataEntry />} />
               <Route path="/map" element={<MapView />} />
               <Route path="/alerts" element={<Alerts />} />
