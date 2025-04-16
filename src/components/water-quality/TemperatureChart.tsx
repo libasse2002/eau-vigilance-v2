@@ -1,4 +1,3 @@
-
 import { WaterQualityData } from "@/types";
 import { format } from "date-fns";
 import {
@@ -54,6 +53,14 @@ export function TemperatureChart({ data, height = 400 }: TemperatureChartProps) 
     { id: 'summer', name: 'Été', start: 'Jul', end: 'Sep', color: '#fff2cc', expected: [20, 30] },
     { id: 'fall', name: 'Automne', start: 'Oct', end: 'Dec', color: '#ffe6cc', expected: [10, 20] }
   ];
+
+  // Mettre à jour la fonction pour retourner un objet de style
+  const getTemperatureStyle = (temp: number) => {
+    if (temp > maxThreshold || temp < minThreshold) {
+      return { fill: "#ef4444" };
+    }
+    return { fill: "#3b82f6" };
+  };
 
   return (
     <div className="space-y-2">
@@ -172,14 +179,11 @@ export function TemperatureChart({ data, height = 400 }: TemperatureChartProps) 
               stroke="#ef4444"
               fillOpacity={1}
               fill="url(#temperatureGradient)"
-              activeDot={{ r: 6, fill: (props: any) => {
-                // Highlight anomalies
-                const val = props.payload.value;
-                if (val > maxThreshold || val < minThreshold) {
-                  return "#ef4444";
-                }
-                return "#3b82f6";
-              }}}
+              activeDot={{ 
+                r: 6,
+                ...getTemperatureStyle(chartData[0]?.value || 20),
+                stroke: "#fff"
+              }}
             />
           </AreaChart>
         </ResponsiveContainer>

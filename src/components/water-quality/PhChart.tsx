@@ -1,4 +1,3 @@
-
 import { WaterQualityData } from "@/types";
 import { format } from "date-fns";
 import {
@@ -47,13 +46,13 @@ export function PhChart({ data, height = 400 }: PhChartProps) {
   const domainMin = Math.min(minValue * 0.9, 5);  // pH scale
   const domainMax = Math.max(maxValue * 1.1, 10); // pH scale
 
-  // pH level colors
-  const getPhColor = (ph: number) => {
-    if (ph < 6) return "#ef4444"; // Acidic - red
-    if (ph >= 6 && ph < 6.5) return "#f97316"; // Slightly acidic - orange
-    if (ph >= 6.5 && ph <= 8.5) return "#22c55e"; // Optimal - green
-    if (ph > 8.5 && ph <= 9) return "#f97316"; // Slightly alkaline - orange
-    return "#3b82f6"; // Alkaline - blue
+  // Mettre à jour la fonction getPhColor pour retourner un objet de style
+  const getPhStyle = (ph: number) => {
+    if (ph < 6) return { fill: "#ef4444" }; // Acidic - red
+    if (ph >= 6 && ph < 6.5) return { fill: "#f97316" }; // Slightly acidic - orange
+    if (ph >= 6.5 && ph <= 8.5) return { fill: "#22c55e" }; // Optimal - green
+    if (ph > 8.5 && ph <= 9) return { fill: "#f97316" }; // Slightly alkaline - orange
+    return { fill: "#3b82f6" }; // Alkaline - blue
   };
 
   return (
@@ -97,7 +96,7 @@ export function PhChart({ data, height = 400 }: PhChartProps) {
                 if (active && payload && payload.length) {
                   const data = payload[0].payload;
                   const phValue = data.value;
-                  const phColor = getPhColor(phValue);
+                  const phColor = getPhStyle(phValue).fill;
                   
                   let phStatus = "Neutre";
                   if (phValue < 6) phStatus = "Acide";
@@ -171,8 +170,8 @@ export function PhChart({ data, height = 400 }: PhChartProps) {
               fillOpacity={1}
               fill="url(#phGradient)"
               activeDot={{ 
-                r: 6, 
-                fill: (props: any) => getPhColor(props.payload.value),
+                r: 6,
+                ...getPhStyle(chartData[0]?.value || 7),
                 stroke: "#fff"
               }}
             />

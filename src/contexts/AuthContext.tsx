@@ -1,84 +1,138 @@
 
-import { User, UserRole } from "@/types";
-import { createContext, useContext, useEffect, useState } from "react";
-import { users } from "@/data/mockData";
+import { createContext, useContext, useEffect, useState } from 'react';
+import { Session, User } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
+  session: Session | null;
   user: User | null;
+  profile: any | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  hasPermission: (requiredRole: UserRole) => boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, userData: any) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  isLoading: true,
-  login: async () => false,
-  logout: () => {},
-  hasPermission: () => false,
-});
-
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Check for existing session on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, currentSession) => {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        if (currentSession?.user) {
+          // Fetch user profile
+          setTimeout(() => {
+            fetchUserProfile(currentSession.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      
+      if (currentSession?.user) {
+        fetchUserProfile(currentSession.user.id);
+      }
+      setIsLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // Login function - in a real app this would call an API
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Find user by email (in real app would verify password too)
-    const foundUser = users.find(u => u.email === email);
-    
-    if (foundUser) {
-      setUser(foundUser);
-      localStorage.setItem("user", JSON.stringify(foundUser));
-      setIsLoading(false);
-      return true;
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      setProfile(null);
     }
-    
-    setIsLoading(false);
-    return false;
   };
-  
-  // Logout function
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      navigate('/');
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
   };
-  
-  // Check if user has required permission
-  const hasPermission = (requiredRole: UserRole): boolean => {
-    if (!user) return false;
-    
-    const roleHierarchy = {
-      [UserRole.ADMIN]: 5,
-      [UserRole.DIRECTOR]: 4,
-      [UserRole.EXTERNAL_SUPERVISOR]: 3,
-      [UserRole.INTERNAL_SUPERVISOR]: 3,
-      [UserRole.SITE_AGENT]: 2,
-      [UserRole.PROFESSOR]: 1,
-    };
-    
-    return roleHierarchy[user.role] >= roleHierarchy[requiredRole];
+
+  const signUp = async (email: string, password: string, userData: any) => {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: userData,
+        },
+      });
+      if (error) throw error;
+      navigate('/');
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
   };
-  
+
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate('/login');
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, hasPermission }}>
+    <AuthContext.Provider
+      value={{
+        session,
+        user,
+        profile,
+        isLoading,
+        signIn,
+        signUp,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
