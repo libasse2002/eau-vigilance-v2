@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +13,7 @@ import Alerts from "./pages/Alerts";
 import NotFound from "./pages/NotFound";
 import DataEntry from "./pages/DataEntry";
 import AdvancedVisualization from "./pages/AdvancedVisualization";
+import DataManagement from "./pages/DataManagement";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +33,7 @@ const App = () => (
               <Route path="/data-entry" element={<DataEntry />} />
               <Route path="/map" element={<MapView />} />
               <Route path="/alerts" element={<Alerts />} />
+              <Route path="/data-management" element={<DataManagement />} />
               {/* Other routes will be added later */}
             </Route>
             <Route path="*" element={<NotFound />} />
