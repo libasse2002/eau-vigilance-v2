@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WaterQualityFormData } from "@/types/waterQuality";
 import { useToast } from "@/hooks/use-toast";
 import { useSites } from "@/hooks/useSites";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   ThermometerIcon, 
   DropletIcon, 
@@ -66,22 +66,60 @@ export default function DataEntry() {
   });
 
   const onSubmit = async (data: WaterQualityFormData) => {
+    if (!user?.id) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Vous devez être connecté pour enregistrer des données.",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/data", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...data,
-          timestamp: new Date(),
-          collectedBy: user?.id,
-        }),
-      });
+      // Convertir les données du formulaire au format attendu par Supabase
+      const waterQualityData = {
+        site_id: data.siteId,
+        collected_by: user.id,
+        timestamp: new Date(),
+        latitude: data.location.latitude,
+        longitude: data.location.longitude,
+        ph: data.pH,
+        temperature: data.temperature,
+        dissolved_oxygen: data.dissolvedOxygen,
+        conductivity: data.conductivity,
+        turbidity: data.turbidity,
+        salinity: data.salinity,
+        nitrates: data.nitrates,
+        nitrites: data.nitrites,
+        ammonium: data.ammonium,
+        phosphates: data.phosphates,
+        suspended_solids: data.suspendedSolids,
+        fecal_coliforms: data.fecalColiforms,
+        e_coli: data.eColi,
+        pathogens: data.pathogens,
+        ibgn: data.ibgn,
+        lead: data.lead,
+        mercury: data.mercury,
+        arsenic: data.arsenic,
+        cadmium: data.cadmium,
+        chromium: data.chromium,
+        copper: data.copper,
+        zinc: data.zinc,
+        hydrocarbons: data.hydrocarbons,
+        organic_solvents: data.organicSolvents,
+        pesticides: data.pesticides,
+        notes: data.notes
+      };
 
-      if (!response.ok) {
-        throw new Error("Failed to submit data");
+      // Insérer les données dans Supabase
+      const { error } = await supabase
+        .from('water_quality_data')
+        .insert(waterQualityData);
+
+      if (error) {
+        console.error("Erreur Supabase:", error);
+        throw error;
       }
 
       toast({
@@ -91,6 +129,7 @@ export default function DataEntry() {
 
       form.reset();
     } catch (error) {
+      console.error("Erreur:", error);
       toast({
         variant: "destructive",
         title: "Erreur",

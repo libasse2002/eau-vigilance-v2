@@ -15,8 +15,8 @@ export function AlertsList({ alerts, onAcknowledge }: AlertsListProps) {
     return (
       <div className="flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
         <BellOffIcon className="h-12 w-12 mb-2 text-muted-foreground" />
-        <h3 className="text-lg font-medium">No Alerts</h3>
-        <p className="text-sm">All systems are functioning normally.</p>
+        <h3 className="text-lg font-medium">Aucune alerte</h3>
+        <p className="text-sm">Tous les systèmes fonctionnent correctement.</p>
       </div>
     );
   }
