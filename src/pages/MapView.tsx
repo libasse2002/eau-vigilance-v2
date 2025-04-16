@@ -2,18 +2,44 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { miningSites, waterQualityData } from "@/data/mockData";
+import { useWaterQualityData } from "@/hooks/useWaterQualityData";
+import { useSites } from "@/hooks/useSites";
 import { MiningSite, WaterQualityData } from "@/types";
 
 export default function MapView() {
-  const [selectedSite, setSelectedSite] = useState<string>(miningSites[0].id);
+  const { data: sites = [], isLoading: isSitesLoading } = useSites();
+  const { data: waterQualityData = [], isLoading: isDataLoading } = useWaterQualityData();
   
-  // Get selected site data
-  const site = miningSites.find(site => site.id === selectedSite) as MiningSite;
+  const [selectedSite, setSelectedSite] = useState<string>(sites.length > 0 ? sites[0].id : "");
+  
+  // Loading state
+  if (isSitesLoading || isDataLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+  
+  // If no sites are available
+  if (sites.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen gap-4">
+        <h2 className="text-2xl font-semibold">No mining sites available</h2>
+        <p className="text-muted-foreground">
+          Please add mining sites to view the map visualization.
+        </p>
+      </div>
+    );
+  }
+  
+  // Get selected site data (or use the first site if selectedSite is empty)
+  const siteId = selectedSite || sites[0].id;
+  const site = sites.find(site => site.id === siteId) as MiningSite;
   
   // Filter water quality data for selected site
   const siteData = waterQualityData
-    .filter(data => data.siteId === selectedSite)
+    .filter(data => data.siteId === siteId)
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   
   // Parse the data into GeoJSON format for map
@@ -45,12 +71,12 @@ export default function MapView() {
           </p>
         </div>
         
-        <Select value={selectedSite} onValueChange={setSelectedSite}>
+        <Select value={siteId} onValueChange={setSelectedSite}>
           <SelectTrigger className="w-[220px]">
             <SelectValue placeholder="Select a site" />
           </SelectTrigger>
           <SelectContent>
-            {miningSites.map(site => (
+            {sites.map(site => (
               <SelectItem key={site.id} value={site.id}>
                 {site.name}
               </SelectItem>

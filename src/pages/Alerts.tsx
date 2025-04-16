@@ -110,7 +110,7 @@ export default function Alerts() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Sites</SelectItem>
-                      {miningSites.map(site => (
+                      {sites.map(site => (
                         <SelectItem key={site.id} value={site.id}>
                           {site.name}
                         </SelectItem>
