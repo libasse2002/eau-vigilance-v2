@@ -5,21 +5,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { miningSites, waterQualityData } from "@/data/mockData";
-import { format } from "date-fns";
+import { useWaterQualityData } from "@/hooks/useWaterQualityData";
+import { useSites } from "@/hooks/useSites";
 import { 
-  ActivityIcon, 
-  Download as DownloadIcon, 
-  Droplet as DropletIcon, 
-  Filter as FilterIcon, 
-  FlaskConical as FlaskConicalIcon, 
-  Search as SearchIcon, 
-  Thermometer as ThermometerIcon,
-  Database as DatabaseIcon,
-  BarChart3Icon
+  ThermometerIcon, 
+  DropletIcon,
+  FlaskConicalIcon,
+  DatabaseIcon,
+  BarChart3Icon,
+  Loader2Icon,
 } from "lucide-react";
-
-// Import our new chart components
 import { TemperatureChart } from "@/components/water-quality/TemperatureChart";
 import { PhChart } from "@/components/water-quality/PhChart";
 import { DissolvedOxygenChart } from "@/components/water-quality/DissolvedOxygenChart";
@@ -31,16 +26,39 @@ export default function WaterData() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "normal" | "warning" | "critical">("all");
   
-  // Filter the data based on site, search, and status
+  const { data: sites, isLoading: isSitesLoading } = useSites();
+  const { data: waterQualityData, isLoading: isDataLoading } = useWaterQualityData(selectedSite);
+  
+  // Si les données sont en cours de chargement, afficher un indicateur
+  if (isDataLoading || isSitesLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2Icon className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Si aucune donnée n'est disponible, afficher un message
+  if (!waterQualityData?.length) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen gap-4">
+        <DropletIcon className="h-12 w-12 text-muted-foreground" />
+        <h2 className="text-2xl font-semibold">Aucune donnée disponible</h2>
+        <p className="text-muted-foreground">
+          Commencez par ajouter des données de qualité d'eau pour voir les visualisations.
+        </p>
+      </div>
+    );
+  }
+
+  // Filtrer les données en fonction des critères
   const filteredData = waterQualityData
-    .filter(data => selectedSite === "all" ? true : data.siteId === selectedSite)
     .filter(data => !searchQuery ? true : (
       data.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      data.siteId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      data.collectedBy.toLowerCase().includes(searchQuery.toLowerCase())
+      data.site_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      data.collected_by.toLowerCase().includes(searchQuery.toLowerCase())
     ))
-    .filter(data => statusFilter === "all" ? true : data.status === statusFilter)
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    .filter(data => statusFilter === "all" ? true : data.status === statusFilter);
 
   return (
     <div className="space-y-6">
