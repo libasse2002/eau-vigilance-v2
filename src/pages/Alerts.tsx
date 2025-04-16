@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,7 +18,7 @@ export default function Alerts() {
   const [severityFilter, setSeverityFilter] = useState<"all" | "low" | "medium" | "high">("all");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   
-  const { data: alerts = [], isLoading: isAlertsLoading } = useAlerts();
+  const { data: alerts = [], isLoading: isAlertsLoading, acknowledgeAlert } = useAlerts();
   const { data: sites = [], isLoading: isSitesLoading } = useSites();
   
   // Loading state
@@ -66,12 +65,11 @@ export default function Alerts() {
   const warningAlerts = filteredAlerts.filter(alert => alert.severity === "medium");
   const lowAlerts = filteredAlerts.filter(alert => alert.severity === "low");
   
-  // Mock acknowledge function
-  const acknowledgeAlert = (alertId: string) => {
-    // In a real app, this would call an API
-    console.log(`Alert ${alertId} acknowledged`);
+  // Acknowledge alert
+  const handleAcknowledge = (alertId: string) => {
+    acknowledgeAlert(alertId);
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col space-y-4">
@@ -232,12 +230,12 @@ export default function Alerts() {
             </TabsList>
             
             <TabsContent value="all">
-              <AlertsList alerts={filteredAlerts} onAcknowledge={acknowledgeAlert} />
+              <AlertsList alerts={filteredAlerts} onAcknowledge={handleAcknowledge} />
             </TabsContent>
             
             <TabsContent value="unacknowledged">
               {unacknowledgedAlerts.length > 0 ? (
-                <AlertsList alerts={unacknowledgedAlerts} onAcknowledge={acknowledgeAlert} />
+                <AlertsList alerts={unacknowledgedAlerts} onAcknowledge={handleAcknowledge} />
               ) : (
                 <div className="flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
                   <CheckIcon className="h-12 w-12 mb-2 text-alert-low" />
