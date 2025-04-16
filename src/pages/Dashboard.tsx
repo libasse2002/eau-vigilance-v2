@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { AlertsList } from "@/components/dashboard/AlertsList";
@@ -21,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [selectedSite, setSelectedSite] = useState<string>(miningSites[0].id);
   const [recentAlerts, setRecentAlerts] = useState<Alert[]>(
     alerts
@@ -61,7 +60,7 @@ export default function Dashboard() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back, {user?.name}! Here's the latest water quality data.
+            Welcome back, {profile?.name || 'User'}! Here's the latest water quality data.
           </p>
         </div>
         

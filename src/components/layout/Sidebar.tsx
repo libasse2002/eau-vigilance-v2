@@ -18,7 +18,7 @@ import {
 import { Link, useLocation } from "react-router-dom";
 
 export function Sidebar() {
-  const { user, logout, hasPermission } = useAuth();
+  const { user, profile, logout, hasPermission } = useAuth();
   const location = useLocation();
   
   if (!user) return null;
@@ -141,17 +141,17 @@ export function Sidebar() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-              {user.avatar ? (
-                <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+              {profile?.avatar ? (
+                <img src={profile.avatar} alt={profile.name} className="h-full w-full object-cover" />
               ) : (
                 <span className="text-xs font-medium text-gray-500">
-                  {user.name.split(" ").map(n => n[0]).join("")}
+                  {profile?.name ? profile.name.split(" ").map((n:string) => n[0]).join("") : ""}
                 </span>
               )}
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-700">{user.name}</span>
-              <span className="text-xs text-gray-500 capitalize">{user.role}</span>
+              <span className="text-sm font-medium text-gray-700">{profile?.name}</span>
+              <span className="text-xs text-gray-500 capitalize">{profile?.role}</span>
             </div>
           </div>
           <button 

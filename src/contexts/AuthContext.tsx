@@ -1,8 +1,8 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { UserRole } from '@/types';
 
 interface AuthContextType {
   session: Session | null;
@@ -12,6 +12,9 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData: any) => Promise<void>;
   signOut: () => Promise<void>;
+  // Add the following properties to match what's used in components
+  logout: () => Promise<void>;
+  hasPermission: (role: UserRole) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -112,6 +115,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Add the logout function that's an alias for signOut to match what's used in Sidebar
+  const logout = async () => {
+    return signOut();
+  };
+
+  // Add hasPermission function to check if user has specific role
+  const hasPermission = (role: UserRole) => {
+    if (!profile) return false;
+    
+    // If user is admin, they have all permissions
+    if (profile.role === 'admin') return true;
+    
+    // Otherwise, check if the user's role matches the required role
+    return profile.role === role;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -122,6 +141,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signUp,
         signOut,
+        // Include the new functions in the context value
+        logout,
+        hasPermission,
       }}
     >
       {children}
