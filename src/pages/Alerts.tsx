@@ -4,12 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Alert as AlertType, MiningSite } from "@/types";
-import { alerts, miningSites } from "@/data/mockData";
+import { Alert as AlertType } from "@/types";
 import { AlertsList } from "@/components/dashboard/AlertsList";
 import { BellIcon, CheckIcon, FilterIcon, SortAscIcon, SortDescIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAlerts } from "@/hooks/useAlerts";
+import { useSites } from "@/hooks/useSites";
 
 export default function Alerts() {
   const [selectedSite, setSelectedSite] = useState<string>("all");
@@ -18,12 +19,23 @@ export default function Alerts() {
   const [severityFilter, setSeverityFilter] = useState<"all" | "low" | "medium" | "high">("all");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   
+  const { data: alerts = [], isLoading: isAlertsLoading } = useAlerts();
+  const { data: sites = [], isLoading: isSitesLoading } = useSites();
+  
+  // Loading state
+  if (isAlertsLoading || isSitesLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+  
   // Filter alerts based on site, search, and status
   const filteredAlerts = alerts
     .filter(alert => {
       if (selectedSite === "all") return true;
-      const data = alert.dataId;
-      return data.includes(selectedSite);
+      return alert.dataId.includes(selectedSite);
     })
     .filter(alert => {
       if (!searchQuery) return true;

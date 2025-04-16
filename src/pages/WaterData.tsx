@@ -14,6 +14,8 @@ import {
   DatabaseIcon,
   BarChart3Icon,
   Loader2Icon,
+  Download as DownloadIcon,
+  Search as SearchIcon
 } from "lucide-react";
 import { TemperatureChart } from "@/components/water-quality/TemperatureChart";
 import { PhChart } from "@/components/water-quality/PhChart";
@@ -55,8 +57,8 @@ export default function WaterData() {
   const filteredData = waterQualityData
     .filter(data => !searchQuery ? true : (
       data.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      data.site_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      data.collected_by.toLowerCase().includes(searchQuery.toLowerCase())
+      data.siteId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      data.collectedBy.toLowerCase().includes(searchQuery.toLowerCase())
     ))
     .filter(data => statusFilter === "all" ? true : data.status === statusFilter);
 
@@ -102,7 +104,7 @@ export default function WaterData() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Tous les sites</SelectItem>
-                      {miningSites.map(site => (
+                      {sites?.map(site => (
                         <SelectItem key={site.id} value={site.id}>
                           {site.name}
                         </SelectItem>

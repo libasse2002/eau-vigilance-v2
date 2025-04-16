@@ -10,8 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WaterQualityFormData } from "@/types/waterQuality";
-import { miningSites } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
+import { useSites } from "@/hooks/useSites";
 import { 
   ThermometerIcon, 
   DropletIcon, 
@@ -27,6 +27,7 @@ export default function DataEntry() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: miningSites = [], isLoading: isSitesLoading } = useSites();
 
   const form = useForm<WaterQualityFormData>({
     defaultValues: {
@@ -99,6 +100,15 @@ export default function DataEntry() {
       setIsSubmitting(false);
     }
   };
+
+  // Loading state
+  if (isSitesLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-6 space-y-6">

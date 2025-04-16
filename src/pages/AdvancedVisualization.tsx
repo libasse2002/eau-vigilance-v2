@@ -1,8 +1,8 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { miningSites, waterQualityData } from "@/data/mockData";
 import { WaterQualityData } from "@/types";
 import { 
   Activity as ActivityIcon, 
@@ -17,13 +17,26 @@ import { AdvancedWaterQualityChart } from "@/components/water-quality/AdvancedWa
 import { Button } from "@/components/ui/button";
 import { MetalsRadarChart } from "@/components/water-quality/MetalsRadarChart";
 import { IBGNBarChart } from "@/components/water-quality/IBGNBarChart";
+import { useWaterQualityData } from "@/hooks/useWaterQualityData";
+import { useSites } from "@/hooks/useSites";
 
 export default function AdvancedVisualization() {
   const [selectedSite, setSelectedSite] = useState<string>("all");
   
+  const { data: sites = [], isLoading: isSitesLoading } = useSites();
+  const { data: waterQualityData = [], isLoading: isDataLoading } = useWaterQualityData(selectedSite);
+  
+  // Loading state
+  if (isDataLoading || isSitesLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+  
   // Filter data based on selected site
   const filteredData = waterQualityData
-    .filter(data => selectedSite === "all" ? true : data.siteId === selectedSite)
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   return (
@@ -55,7 +68,7 @@ export default function AdvancedVisualization() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Sites</SelectItem>
-                    {miningSites.map(site => (
+                    {sites.map(site => (
                       <SelectItem key={site.id} value={site.id}>
                         {site.name}
                       </SelectItem>
