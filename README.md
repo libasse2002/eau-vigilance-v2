@@ -1,4 +1,4 @@
-Ce projet, réalisé à la demande d’une étudiante en Master 2 DGAE, est une plateforme de suivi intelligent de la qualité des ressources en eau sur plusieurs sites.
+Ce projet represente une plateforme de suivi intelligent de la qualité des ressources en eau sur plusieurs sites.
 
 Elle a pour objectif d’optimiser la collecte, la transmission en temps réel et la gestion des alertes environnementales.
 Elle permet notamment :
