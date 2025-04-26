@@ -1,73 +1,24 @@
-# Welcome to your Lovable project
+Ce projet, réalisé à la demande d’une étudiante en Master 2 DGAE, est une plateforme de suivi intelligent de la qualité des ressources en eau sur plusieurs sites.
 
-## Project info
+Elle a pour objectif d’optimiser la collecte, la transmission en temps réel et la gestion des alertes environnementales.
+Elle permet notamment :
 
-**URL**: https://lovable.dev/projects/663e486d-cfdf-49a1-91a0-1cfe8810fbde
+l’intégration automatique des données issues de sites miniers,
 
-## How can I edit this code?
+la notification en temps réel aux moniteurs et responsables,
 
-There are several ways of editing your application.
+la détection rapide des anomalies environnementales,
 
-**Use Lovable**
+un système sécurisé de gestion des accès et de restriction selon les rôles des utilisateurs,
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/663e486d-cfdf-49a1-91a0-1cfe8810fbde) and start prompting.
+la visualisation des données via des graphiques et une carte interactive
 
-Changes made via Lovable will be committed automatically to this repo.
+Nous avons lancé une première version fonctionnelle de la plateforme. Je vous partage ci-joints :
 
-**Use your preferred IDE**
+le lien d’accès: https://eau-vigilance-v4.vercel.app/
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+les identifiants de connexion:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/663e486d-cfdf-49a1-91a0-1cfe8810fbde) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+  admin: dia.limamoulaye@uam.edu.sn, passer1234
+Agent de Site: dialimamoulaye@gmail.com, passer123
+Professeur: dialim2002@icloud.com, passer1234
